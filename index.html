@@ -11,7 +11,7 @@
     <title>Rekordbox Metadata Fixer</title>
 
 
-    <!-- JSZip is used only to package multiple corrected files -->
+    <!-- JSZip is used to package multiple corrected files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 
@@ -204,6 +204,29 @@
             font-size: 18px;
 
             margin-bottom: 8px;
+        }
+
+
+        /* NEW:
+           Confirmation message after folder selection */
+
+        .folder-selected-message {
+
+            display: none;
+
+            margin-top: 15px;
+
+            padding: 12px 15px;
+
+            border-radius: 8px;
+
+            background: #e8f5eb;
+
+            color: #216b34;
+
+            line-height: 1.5;
+
+            font-size: 14px;
         }
 
 
@@ -742,6 +765,15 @@
             >
 
 
+            <!-- NEW:
+                 This confirms that the folder was selected -->
+
+            <div
+                id="folderSelectedMessage"
+                class="folder-selected-message"
+            ></div>
+
+
             <p class="folder-note">
 
                 Your original files will not be changed.
@@ -913,6 +945,12 @@ const status =
 
 const folderInput =
     document.getElementById("folderInput");
+
+
+const folderSelectedMessage =
+    document.getElementById(
+        "folderSelectedMessage"
+    );
 
 
 const batchButton =
@@ -1911,6 +1949,59 @@ folderInput.addEventListener(
             null;
 
 
+        /*
+         * NEW:
+         * Confirm that the folder has been selected.
+         */
+
+        if (
+            selectedFolderFiles.length > 0
+        ) {
+
+
+            const path =
+                this.files[0].webkitRelativePath ||
+                "";
+
+
+            const folderName =
+                path.split("/")[0] ||
+                "Selected folder";
+
+
+            folderSelectedMessage.innerHTML =
+                "✓ <strong>Folder selected:</strong> " +
+                folderName +
+                "<br>" +
+                selectedFolderFiles.length +
+                " MP3/WAV file" +
+                (
+                    selectedFolderFiles.length === 1
+                        ? ""
+                        : "s"
+                ) +
+                " found and ready to process.";
+
+
+            folderSelectedMessage.style.display =
+                "block";
+
+        }
+
+
+        else {
+
+
+            folderSelectedMessage.innerHTML =
+                "No MP3 or WAV files were found in the selected folder.";
+
+
+            folderSelectedMessage.style.display =
+                "block";
+
+        }
+
+
         if (
             selectedFolderFiles.length === 0
         ) {
@@ -1918,11 +2009,6 @@ folderInput.addEventListener(
 
             batchButton.disabled =
                 true;
-
-
-            showFolderError(
-                "No MP3 or WAV files were found in the selected folder."
-            );
 
 
             return;
@@ -1933,11 +2019,6 @@ folderInput.addEventListener(
         batchButton.disabled =
             false;
 
-
-        /*
-         * Show how many usable files
-         * were found.
-         */
 
         progressText.textContent =
             selectedFolderFiles.length +
@@ -2095,14 +2176,7 @@ batchButton.addEventListener(
 
                 /*
                  * Preserve subfolder structure
-                 * inside the ZIP where possible.
-                 *
-                 * webkitRelativePath normally looks like:
-                 *
-                 * MyFolder/Subfolder/Track.mp3
-                 *
-                 * We remove the top-level selected
-                 * folder name.
+                 * where possible.
                  */
 
 
@@ -2189,7 +2263,7 @@ batchButton.addEventListener(
 
             /*
              * Give the browser a chance to
-             * update the display between files.
+             * update the display.
              */
 
             await new Promise(
@@ -2213,10 +2287,6 @@ batchButton.addEventListener(
         progressText.textContent =
             "Creating Processed.zip...";
 
-
-        /*
-         * Generate the ZIP.
-         */
 
         try {
 
@@ -2259,6 +2329,7 @@ batchButton.addEventListener(
             if (
                 failed.length > 0
             ) {
+
 
                 addResultItem(
                     "",
@@ -2608,25 +2679,6 @@ function showError(
 
 
 
-function showFolderError(
-    message
-) {
-
-    resultSummary.textContent =
-        message;
-
-
-    batchResults.style.display =
-        "block";
-
-
-    resultList.innerHTML =
-        "";
-
-}
-
-
-
 /* ============================================================
    SAVE SINGLE CORRECTED FILE
    ============================================================ */
@@ -2648,6 +2700,7 @@ saveButton.addEventListener(
          * Chrome / Edge:
          * use native Save As.
          */
+
 
         if (
             "showSaveFilePicker" in window
@@ -2757,6 +2810,7 @@ saveButton.addEventListener(
          * Firefox / Safari / other browsers:
          * use normal download behaviour.
          */
+
 
         const url =
             URL.createObjectURL(
