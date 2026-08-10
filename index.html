@@ -11,6 +11,10 @@
     <title>Rekordbox Metadata Fixer</title>
 
 
+    <!-- JSZip is used only to package multiple corrected files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+
     <style>
 
         * {
@@ -39,9 +43,9 @@
 
         .container {
 
-            max-width: 720px;
+            max-width: 760px;
 
-            margin: 60px auto;
+            margin: 50px auto;
 
             padding: 20px;
         }
@@ -77,6 +81,40 @@
             color: #666;
 
             margin-bottom: 35px;
+
+            line-height: 1.5;
+        }
+
+
+        h2 {
+
+            font-size: 21px;
+
+            margin-top: 0;
+
+            margin-bottom: 10px;
+        }
+
+
+        .section-description {
+
+            color: #666;
+
+            line-height: 1.5;
+
+            margin-top: 0;
+
+            margin-bottom: 20px;
+        }
+
+
+        .section {
+
+            margin-top: 35px;
+
+            padding-top: 35px;
+
+            border-top: 1px solid #eee;
         }
 
 
@@ -90,7 +128,7 @@
 
             border-radius: 12px;
 
-            padding: 45px 20px;
+            padding: 42px 20px;
 
             text-align: center;
 
@@ -124,6 +162,48 @@
         input[type="file"] {
 
             display: none;
+        }
+
+
+        .folder-button {
+
+            display: block;
+
+            width: 100%;
+
+            border: 2px dashed #aaa;
+
+            border-radius: 12px;
+
+            padding: 25px 20px;
+
+            text-align: center;
+
+            background: #fafafa;
+
+            cursor: pointer;
+
+            font-size: 16px;
+
+            transition: 0.2s;
+        }
+
+
+        .folder-button:hover {
+
+            border-color: #333;
+
+            background: #f0f0f0;
+        }
+
+
+        .folder-button strong {
+
+            display: block;
+
+            font-size: 18px;
+
+            margin-bottom: 8px;
         }
 
 
@@ -219,6 +299,38 @@
         }
 
 
+        .batch-button {
+
+            background: #222;
+
+            color: white;
+
+            margin-top: 20px;
+        }
+
+
+        .batch-button:hover:not(:disabled) {
+
+            background: #444;
+        }
+
+
+        .save-batch-button {
+
+            background: #287a3e;
+
+            color: white;
+
+            display: none;
+        }
+
+
+        .save-batch-button:hover {
+
+            background: #1f6332;
+        }
+
+
         .save-note {
 
             display: none;
@@ -265,6 +377,118 @@
         }
 
 
+        .progress-area {
+
+            display: none;
+
+            margin-top: 25px;
+        }
+
+
+        .progress-bar-container {
+
+            width: 100%;
+
+            height: 12px;
+
+            background: #e8e8e8;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+        }
+
+
+        .progress-bar {
+
+            height: 100%;
+
+            width: 0%;
+
+            background: #333;
+
+            transition: width 0.15s;
+        }
+
+
+        .progress-text {
+
+            text-align: center;
+
+            margin-top: 10px;
+
+            color: #666;
+
+            font-size: 14px;
+        }
+
+
+        .batch-results {
+
+            display: none;
+
+            margin-top: 25px;
+        }
+
+
+        .result-summary {
+
+            padding: 15px;
+
+            background: #f5f5f5;
+
+            border-radius: 8px;
+
+            line-height: 1.7;
+        }
+
+
+        .result-list {
+
+            margin-top: 15px;
+
+            max-height: 300px;
+
+            overflow-y: auto;
+
+            border: 1px solid #eee;
+
+            border-radius: 8px;
+        }
+
+
+        .result-item {
+
+            padding: 9px 12px;
+
+            border-bottom: 1px solid #eee;
+
+            font-family: monospace;
+
+            font-size: 13px;
+
+            word-break: break-word;
+        }
+
+
+        .result-item:last-child {
+
+            border-bottom: 0;
+        }
+
+
+        .result-success {
+
+            color: #216b34;
+        }
+
+
+        .result-failed {
+
+            color: #9b2222;
+        }
+
+
         .privacy {
 
             text-align: center;
@@ -273,7 +497,47 @@
 
             font-size: 13px;
 
-            margin-top: 25px;
+            margin-top: 30px;
+
+            line-height: 1.5;
+        }
+
+
+        .folder-note {
+
+            text-align: center;
+
+            color: #777;
+
+            font-size: 13px;
+
+            margin-top: 12px;
+
+            line-height: 1.4;
+        }
+
+
+        @media (max-width: 600px) {
+
+            .container {
+
+                margin: 20px auto;
+
+                padding: 10px;
+            }
+
+
+            .card {
+
+                padding: 25px 20px;
+            }
+
+
+            h1 {
+
+                font-size: 25px;
+            }
+
         }
 
     </style>
@@ -302,87 +566,257 @@
         </p>
 
 
-        <!-- FILE DROP AREA -->
+        <!-- =====================================================
+             SINGLE FILE
+             ===================================================== -->
 
-        <label
-            class="drop-zone"
-            id="dropZone"
-        >
 
-            <strong>
-                Drop an MP3 or WAV here
-            </strong>
+        <div>
 
-            <span>
-                or click to choose a file
-            </span>
+            <h2>
+                Process a single file
+            </h2>
+
+
+            <p class="section-description">
+
+                Select an MP3 or WAV file to correct
+                its filename and Rekordbox title.
+
+            </p>
+
+
+            <label
+                class="drop-zone"
+                id="dropZone"
+            >
+
+                <strong>
+                    Drop an MP3 or WAV here
+                </strong>
+
+                <span>
+                    or click to choose a file
+                </span>
+
+
+                <input
+                    type="file"
+                    id="fileInput"
+                    accept=".mp3,.wav,audio/mpeg,audio/wav"
+                >
+
+            </label>
+
+
+            <div
+                class="file-info"
+                id="fileInfo"
+            >
+
+
+                <div class="info-row">
+
+                    <div class="label">
+                        Original filename
+                    </div>
+
+                    <div
+                        class="value"
+                        id="originalName"
+                    ></div>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <div class="label">
+                        Corrected filename
+                    </div>
+
+                    <div
+                        class="value"
+                        id="processedName"
+                    ></div>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <div class="label">
+                        Rekordbox title
+                    </div>
+
+                    <div
+                        class="value"
+                        id="rekordboxTitle"
+                    ></div>
+
+                </div>
+
+
+                <button
+                    class="process-button"
+                    id="processButton"
+                >
+
+                    Process File
+
+                </button>
+
+
+            </div>
+
+
+            <div
+                class="status"
+                id="status"
+            ></div>
+
+
+            <button
+                class="save-button"
+                id="saveButton"
+            >
+
+                Save Corrected File
+
+            </button>
+
+
+            <p
+                class="save-note"
+                id="saveNote"
+            ></p>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             BATCH PROCESSING
+             ===================================================== -->
+
+
+        <div class="section">
+
+
+            <h2>
+                Process an entire folder
+            </h2>
+
+
+            <p class="section-description">
+
+                Select a folder containing your music.
+                All MP3 and WAV files in the folder will
+                be processed. Other file types will be ignored.
+
+            </p>
+
+
+            <label
+                class="folder-button"
+                for="folderInput"
+            >
+
+                <strong>
+                    📁 Select Folder
+                </strong>
+
+                <span>
+                    Choose a folder containing your music files
+                </span>
+
+            </label>
 
 
             <input
                 type="file"
-                id="fileInput"
-                accept=".mp3,.wav,audio/mpeg,audio/wav"
+                id="folderInput"
+                webkitdirectory
+                directory
+                multiple
             >
 
-        </label>
+
+            <p class="folder-note">
+
+                Your original files will not be changed.
+                Corrected files will be placed in a ZIP file.
+
+            </p>
 
 
-        <!-- FILE INFORMATION -->
+            <button
+                class="batch-button"
+                id="batchButton"
+                disabled
+            >
 
-        <div
-            class="file-info"
-            id="fileInfo"
-        >
+                Process Folder
+
+            </button>
 
 
-            <div class="info-row">
-
-                <div class="label">
-                    Original filename
-                </div>
+            <div
+                class="progress-area"
+                id="progressArea"
+            >
 
                 <div
-                    class="value"
-                    id="originalName"
-                ></div>
+                    class="progress-bar-container"
+                >
+
+                    <div
+                        class="progress-bar"
+                        id="progressBar"
+                    ></div>
+
+                </div>
+
+
+                <div
+                    class="progress-text"
+                    id="progressText"
+                >
+
+                    Preparing...
+
+                </div>
 
             </div>
 
 
-            <div class="info-row">
+            <div
+                class="batch-results"
+                id="batchResults"
+            >
 
-                <div class="label">
-                    Corrected filename
-                </div>
 
                 <div
-                    class="value"
-                    id="processedName"
+                    class="result-summary"
+                    id="resultSummary"
                 ></div>
 
-            </div>
-
-
-            <div class="info-row">
-
-                <div class="label">
-                    Rekordbox title
-                </div>
 
                 <div
-                    class="value"
-                    id="rekordboxTitle"
+                    class="result-list"
+                    id="resultList"
                 ></div>
+
 
             </div>
 
 
             <button
-                class="process-button"
-                id="processButton"
+                class="save-batch-button"
+                id="saveBatchButton"
             >
 
-                Process File
+                Save Processed Files
 
             </button>
 
@@ -390,39 +824,11 @@
         </div>
 
 
-        <!-- STATUS -->
-
-        <div
-            class="status"
-            id="status"
-        ></div>
-
-
-        <!-- SAVE BUTTON -->
-
-        <button
-            class="save-button"
-            id="saveButton"
-        >
-
-            Save Corrected File
-
-        </button>
-
-
-        <!-- BROWSER-SPECIFIC SAVE INFORMATION -->
-
-        <p
-            class="save-note"
-            id="saveNote"
-        ></p>
-
-
         <div class="privacy">
 
-            🔒 Your music file is processed
+            🔒 Your music files are processed
             entirely in your browser.
-            It is never uploaded to a server.
+            They are never uploaded to a server.
 
         </div>
 
@@ -440,6 +846,7 @@
    GLOBAL VARIABLES
    ============================================================ */
 
+
 let selectedFile = null;
 
 let processedBlob = null;
@@ -447,10 +854,16 @@ let processedBlob = null;
 let processedFilename = null;
 
 
+let selectedFolderFiles = [];
+
+let batchZip = null;
+
+
 
 /* ============================================================
-   DOM ELEMENTS
+   DOM ELEMENTS — SINGLE FILE
    ============================================================ */
+
 
 const dropZone =
     document.getElementById("dropZone");
@@ -494,8 +907,51 @@ const status =
 
 
 /* ============================================================
-   FILE SELECTION
+   DOM ELEMENTS — BATCH
    ============================================================ */
+
+
+const folderInput =
+    document.getElementById("folderInput");
+
+
+const batchButton =
+    document.getElementById("batchButton");
+
+
+const progressArea =
+    document.getElementById("progressArea");
+
+
+const progressBar =
+    document.getElementById("progressBar");
+
+
+const progressText =
+    document.getElementById("progressText");
+
+
+const batchResults =
+    document.getElementById("batchResults");
+
+
+const resultSummary =
+    document.getElementById("resultSummary");
+
+
+const resultList =
+    document.getElementById("resultList");
+
+
+const saveBatchButton =
+    document.getElementById("saveBatchButton");
+
+
+
+/* ============================================================
+   SINGLE FILE SELECTION
+   ============================================================ */
+
 
 fileInput.addEventListener(
     "change",
@@ -569,8 +1025,9 @@ dropZone.addEventListener(
 
 
 /* ============================================================
-   SELECT FILE
+   SELECT SINGLE FILE
    ============================================================ */
+
 
 function selectFile(file) {
 
@@ -593,9 +1050,12 @@ function selectFile(file) {
     }
 
 
-    selectedFile = file;
+    selectedFile =
+        file;
 
-    processedBlob = null;
+
+    processedBlob =
+        null;
 
 
     saveButton.style.display =
@@ -609,10 +1069,6 @@ function selectFile(file) {
     status.style.display =
         "none";
 
-
-    /*
-     * Normalise the Camelot key.
-     */
 
     processedFilename =
         normaliseCamelotFilename(
@@ -656,7 +1112,10 @@ function selectFile(file) {
    CAMELOT FILENAME NORMALISATION
    ============================================================ */
 
-function normaliseCamelotFilename(filename) {
+
+function normaliseCamelotFilename(
+    filename
+) {
 
 
     /*
@@ -667,7 +1126,7 @@ function normaliseCamelotFilename(filename) {
      * 10A - Track
      * 010A - Track
      *
-     * The dash is deliberately required.
+     * A dash is required.
      */
 
 
@@ -713,8 +1172,9 @@ function normaliseCamelotFilename(filename) {
 
 
 /* ============================================================
-   PROCESS BUTTON
+   PROCESS SINGLE FILE
    ============================================================ */
+
 
 processButton.addEventListener(
     "click",
@@ -761,7 +1221,8 @@ processButton.addEventListener(
 
                 processedBlob =
                     await processMP3(
-                        selectedFile
+                        selectedFile,
+                        processedFilename
                     );
 
             }
@@ -773,7 +1234,8 @@ processButton.addEventListener(
 
                 processedBlob =
                     await processWAV(
-                        selectedFile
+                        selectedFile,
+                        processedFilename
                     );
 
             }
@@ -784,22 +1246,9 @@ processButton.addEventListener(
             );
 
 
-            /*
-             * Show the Save button.
-             */
-
             saveButton.style.display =
                 "block";
 
-
-            /*
-             * Detect the browser directly.
-             *
-             * Firefox does not provide a native
-             * Save As dialog through the API used
-             * by Chrome/Edge, so it uses the
-             * normal Downloads behaviour.
-             */
 
             const userAgent =
                 navigator.userAgent.toLowerCase();
@@ -830,7 +1279,6 @@ processButton.addEventListener(
                     "block";
 
             }
-
 
         }
 
@@ -867,7 +1315,11 @@ processButton.addEventListener(
    MP3 PROCESSING
    ============================================================ */
 
-async function processMP3(file) {
+
+async function processMP3(
+    file,
+    outputFilename
+) {
 
 
     const buffer =
@@ -878,11 +1330,8 @@ async function processMP3(file) {
         new Uint8Array(buffer);
 
 
-    /*
-     * Locate an existing ID3 tag.
-     */
-
-    let tagSize = 0;
+    let tagSize =
+        0;
 
 
     if (
@@ -906,12 +1355,8 @@ async function processMP3(file) {
     }
 
 
-    /*
-     * Build the new title.
-     */
-
     const title =
-        processedFilename.slice(
+        outputFilename.slice(
             0,
             -4
         );
@@ -922,22 +1367,17 @@ async function processMP3(file) {
 
 
     const titleBytes =
-        encoder.encode(title);
-
-
-    /*
-     * TIT2 frame.
-     */
-
-    const frameData =
-        new Uint8Array(
-            1 + titleBytes.length
+        encoder.encode(
+            title
         );
 
 
-    /*
-     * Encoding 3 = UTF-8.
-     */
+    const frameData =
+        new Uint8Array(
+            1 +
+            titleBytes.length
+        );
+
 
     frameData[0] =
         3;
@@ -975,10 +1415,6 @@ async function processMP3(file) {
     );
 
 
-    /*
-     * ID3 header.
-     */
-
     const tag =
         new Uint8Array(
             10 +
@@ -989,22 +1425,22 @@ async function processMP3(file) {
     tag[0] =
         0x49;
 
+
     tag[1] =
         0x44;
+
 
     tag[2] =
         0x33;
 
 
-    /*
-     * ID3v2.3
-     */
-
     tag[3] =
         3;
 
+
     tag[4] =
         0;
+
 
     tag[5] =
         0;
@@ -1023,13 +1459,10 @@ async function processMP3(file) {
     );
 
 
-    /*
-     * Preserve the audio after
-     * the existing ID3 tag.
-     */
-
     const audio =
-        bytes.slice(tagSize);
+        bytes.slice(
+            tagSize
+        );
 
 
     return new Blob(
@@ -1051,7 +1484,11 @@ async function processMP3(file) {
    WAV PROCESSING
    ============================================================ */
 
-async function processWAV(file) {
+
+async function processWAV(
+    file,
+    outputFilename
+) {
 
 
     const buffer =
@@ -1073,10 +1510,6 @@ async function processWAV(file) {
     }
 
 
-    /*
-     * Check RIFF.
-     */
-
     if (
         bytes[0] !== 0x52 ||
         bytes[1] !== 0x49 ||
@@ -1090,10 +1523,6 @@ async function processWAV(file) {
 
     }
 
-
-    /*
-     * Check WAVE.
-     */
 
     if (
         bytes[8] !== 0x57 ||
@@ -1120,10 +1549,6 @@ async function processWAV(file) {
     let audioData =
         null;
 
-
-    /*
-     * Find fmt and data chunks.
-     */
 
     while (
         pos + 8 <= bytes.length
@@ -1200,10 +1625,6 @@ async function processWAV(file) {
             chunkEnd;
 
 
-        /*
-         * RIFF chunks are word aligned.
-         */
-
         if (
             size % 2
         ) {
@@ -1233,12 +1654,8 @@ async function processWAV(file) {
     }
 
 
-    /*
-     * Create INAM.
-     */
-
     const title =
-        processedFilename.slice(
+        outputFilename.slice(
             0,
             -4
         );
@@ -1249,10 +1666,6 @@ async function processWAV(file) {
             title
         );
 
-
-    /*
-     * INAM data includes a null terminator.
-     */
 
     const inamData =
         new Uint8Array(
@@ -1275,10 +1688,6 @@ async function processWAV(file) {
     const inamSize =
         inamData.length;
 
-
-    /*
-     * RIFF requires even chunk sizes.
-     */
 
     const inamPadding =
         inamSize % 2;
@@ -1311,10 +1720,6 @@ async function processWAV(file) {
         8
     );
 
-
-    /*
-     * LIST/INFO chunk.
-     */
 
     const listSize =
         4 +
@@ -1355,10 +1760,6 @@ async function processWAV(file) {
     );
 
 
-    /*
-     * Audio data chunk.
-     */
-
     const audioChunk =
         new Uint8Array(
             8 +
@@ -1385,10 +1786,6 @@ async function processWAV(file) {
         8
     );
 
-
-    /*
-     * Construct complete RIFF.
-     */
 
     const riffSize =
         4 +
@@ -1470,8 +1867,600 @@ async function processWAV(file) {
 
 
 /* ============================================================
+   BATCH FOLDER SELECTION
+   ============================================================ */
+
+
+folderInput.addEventListener(
+    "change",
+    function () {
+
+
+        selectedFolderFiles =
+            Array.from(
+                this.files
+            ).filter(
+                function(file) {
+
+                    const name =
+                        file.name.toLowerCase();
+
+
+                    return (
+                        name.endsWith(".mp3") ||
+                        name.endsWith(".wav")
+                    );
+
+                }
+            );
+
+
+        batchResults.style.display =
+            "none";
+
+
+        saveBatchButton.style.display =
+            "none";
+
+
+        progressArea.style.display =
+            "none";
+
+
+        batchZip =
+            null;
+
+
+        if (
+            selectedFolderFiles.length === 0
+        ) {
+
+
+            batchButton.disabled =
+                true;
+
+
+            showFolderError(
+                "No MP3 or WAV files were found in the selected folder."
+            );
+
+
+            return;
+
+        }
+
+
+        batchButton.disabled =
+            false;
+
+
+        /*
+         * Show how many usable files
+         * were found.
+         */
+
+        progressText.textContent =
+            selectedFolderFiles.length +
+            " MP3/WAV files ready to process.";
+
+    }
+);
+
+
+
+/* ============================================================
+   BATCH PROCESSING
+   ============================================================ */
+
+
+batchButton.addEventListener(
+    "click",
+    async function () {
+
+
+        if (
+            selectedFolderFiles.length === 0
+        ) {
+
+            return;
+
+        }
+
+
+        batchButton.disabled =
+            true;
+
+
+        batchButton.textContent =
+            "Processing...";
+
+
+        saveBatchButton.style.display =
+            "none";
+
+
+        batchResults.style.display =
+            "none";
+
+
+        progressArea.style.display =
+            "block";
+
+
+        progressBar.style.width =
+            "0%";
+
+
+        resultList.innerHTML =
+            "";
+
+
+        const zip =
+            new JSZip();
+
+
+        const processedFolder =
+            zip.folder(
+                "Processed"
+            );
+
+
+        const successful =
+            [];
+
+
+        const failed =
+            [];
+
+
+        const total =
+            selectedFolderFiles.length;
+
+
+        for (
+            let i = 0;
+            i < total;
+            i++
+        ) {
+
+
+            const file =
+                selectedFolderFiles[i];
+
+
+            const filename =
+                file.name;
+
+
+            progressText.textContent =
+                "Processing " +
+                (i + 1) +
+                " of " +
+                total +
+                ": " +
+                filename;
+
+
+            const percent =
+                Math.round(
+                    ((i) / total) *
+                    100
+                );
+
+
+            progressBar.style.width =
+                percent +
+                "%";
+
+
+            try {
+
+
+                const correctedName =
+                    normaliseCamelotFilename(
+                        filename
+                    );
+
+
+                const lower =
+                    filename.toLowerCase();
+
+
+                let correctedBlob;
+
+
+                if (
+                    lower.endsWith(".mp3")
+                ) {
+
+                    correctedBlob =
+                        await processMP3(
+                            file,
+                            correctedName
+                        );
+
+                }
+
+
+                else {
+
+                    correctedBlob =
+                        await processWAV(
+                            file,
+                            correctedName
+                        );
+
+                }
+
+
+                /*
+                 * Preserve subfolder structure
+                 * inside the ZIP where possible.
+                 *
+                 * webkitRelativePath normally looks like:
+                 *
+                 * MyFolder/Subfolder/Track.mp3
+                 *
+                 * We remove the top-level selected
+                 * folder name.
+                 */
+
+
+                let relativePath =
+                    file.webkitRelativePath ||
+                    filename;
+
+
+                const pathParts =
+                    relativePath.split("/");
+
+
+                if (
+                    pathParts.length > 1
+                ) {
+
+                    pathParts.shift();
+
+                }
+
+
+                pathParts[
+                    pathParts.length - 1
+                ] =
+                    correctedName;
+
+
+                const zipPath =
+                    pathParts.join("/");
+
+
+                processedFolder.file(
+                    zipPath,
+                    correctedBlob
+                );
+
+
+                successful.push({
+                    original:
+                        filename,
+
+                    corrected:
+                        correctedName
+                });
+
+
+                addResultItem(
+                    "✓ " +
+                    correctedName,
+                    true
+                );
+
+            }
+
+
+            catch (error) {
+
+
+                console.error(
+                    filename,
+                    error
+                );
+
+
+                failed.push({
+                    filename:
+                        filename,
+
+                    error:
+                        error.message
+                });
+
+
+                addResultItem(
+                    "✗ " +
+                    filename +
+                    " — " +
+                    error.message,
+                    false
+                );
+
+            }
+
+
+            /*
+             * Give the browser a chance to
+             * update the display between files.
+             */
+
+            await new Promise(
+                function(resolve) {
+
+                    setTimeout(
+                        resolve,
+                        0
+                    );
+
+                }
+            );
+
+        }
+
+
+        progressBar.style.width =
+            "100%";
+
+
+        progressText.textContent =
+            "Creating Processed.zip...";
+
+
+        /*
+         * Generate the ZIP.
+         */
+
+        try {
+
+
+            batchZip =
+                await zip.generateAsync({
+                    type:
+                        "blob"
+                });
+
+
+            resultSummary.innerHTML =
+                "<strong>" +
+                total +
+                "</strong> MP3/WAV files found.<br>" +
+
+                "<strong>" +
+                successful.length +
+                "</strong> processed successfully.<br>" +
+
+                "<strong>" +
+                failed.length +
+                "</strong> could not be processed.";
+
+
+            batchResults.style.display =
+                "block";
+
+
+            saveBatchButton.style.display =
+                "block";
+
+
+            progressText.textContent =
+                "Finished processing " +
+                total +
+                " files.";
+
+
+            if (
+                failed.length > 0
+            ) {
+
+                addResultItem(
+                    "",
+                    true
+                );
+
+
+                addResultItem(
+                    "Problem files:",
+                    false
+                );
+
+
+                failed.forEach(
+                    function(item) {
+
+                        addResultItem(
+                            "✗ " +
+                            item.filename +
+                            " — " +
+                            item.error,
+                            false
+                        );
+
+                    }
+                );
+
+            }
+
+        }
+
+
+        catch (error) {
+
+
+            console.error(
+                error
+            );
+
+
+            progressText.textContent =
+                "Could not create ZIP file.";
+
+
+            resultSummary.innerHTML =
+                "The files were processed, but the ZIP file could not be created.";
+
+
+            batchResults.style.display =
+                "block";
+
+        }
+
+
+        batchButton.disabled =
+            false;
+
+
+        batchButton.textContent =
+            "Process Folder";
+
+    }
+);
+
+
+
+/* ============================================================
+   BATCH RESULT LIST
+   ============================================================ */
+
+
+function addResultItem(
+    text,
+    success
+) {
+
+
+    if (
+        text === ""
+    ) {
+
+        const spacer =
+            document.createElement(
+                "div"
+            );
+
+
+        spacer.style.height =
+            "10px";
+
+
+        resultList.appendChild(
+            spacer
+        );
+
+
+        return;
+
+    }
+
+
+    const item =
+        document.createElement(
+            "div"
+        );
+
+
+    item.className =
+        "result-item " +
+        (
+            success
+                ? "result-success"
+                : "result-failed"
+        );
+
+
+    item.textContent =
+        text;
+
+
+    resultList.appendChild(
+        item
+    );
+
+}
+
+
+
+/* ============================================================
+   SAVE BATCH ZIP
+   ============================================================ */
+
+
+saveBatchButton.addEventListener(
+    "click",
+    function () {
+
+
+        if (!batchZip) {
+
+            return;
+
+        }
+
+
+        const url =
+            URL.createObjectURL(
+                batchZip
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        link.href =
+            url;
+
+
+        link.download =
+            "Processed.zip";
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        document.body.removeChild(
+            link
+        );
+
+
+        setTimeout(
+            function() {
+
+                URL.revokeObjectURL(
+                    url
+                );
+
+            },
+            1000
+        );
+
+
+        progressText.textContent =
+            "Processed.zip saved.";
+
+    }
+);
+
+
+
+/* ============================================================
    HELPER FUNCTIONS
    ============================================================ */
+
 
 function readUint32(
     bytes,
@@ -1580,6 +2569,7 @@ function synchsafeToInt(
    STATUS MESSAGES
    ============================================================ */
 
+
 function showSuccess(
     message
 ) {
@@ -1618,9 +2608,29 @@ function showError(
 
 
 
+function showFolderError(
+    message
+) {
+
+    resultSummary.textContent =
+        message;
+
+
+    batchResults.style.display =
+        "block";
+
+
+    resultList.innerHTML =
+        "";
+
+}
+
+
+
 /* ============================================================
-   SAVE CORRECTED FILE
+   SAVE SINGLE CORRECTED FILE
    ============================================================ */
+
 
 saveButton.addEventListener(
     "click",
@@ -1635,11 +2645,8 @@ saveButton.addEventListener(
 
 
         /*
-         * Chrome and Edge support the
-         * File System Access API.
-         *
-         * This gives the user a native
-         * Save As dialog.
+         * Chrome / Edge:
+         * use native Save As.
          */
 
         if (
@@ -1727,10 +2734,6 @@ saveButton.addEventListener(
             catch (error) {
 
 
-                /*
-                 * User cancelled Save As.
-                 */
-
                 if (
                     error.name ===
                     "AbortError"
@@ -1751,8 +2754,8 @@ saveButton.addEventListener(
 
 
         /*
-         * Firefox, Safari and other browsers
-         * use their normal download mechanism.
+         * Firefox / Safari / other browsers:
+         * use normal download behaviour.
          */
 
         const url =
