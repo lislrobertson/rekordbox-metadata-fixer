@@ -357,14 +357,63 @@ function selectFile(file) {
     status.style.display = "none";
 
 
-    /* Add one zero to filename */
+    /*
+ * Normalise Camelot key at the beginning of the filename.
+ *
+ * Examples:
+ *
+ * 6A  - Track.wav  -> 006A - Track.wav
+ * 06A - Track.wav  -> 006A - Track.wav
+ * 9B  - Track.wav  -> 009B - Track.wav
+ * 09B - Track.wav  -> 009B - Track.wav
+ * 10A - Track.wav  -> 010A - Track.wav
+ * 010A - Track.wav -> 010A - Track.wav
+ *
+ * Mixed In Key uses a dash after the Camelot key,
+ * so we deliberately use the dash as the boundary.
+ */
 
-    processedFilename = "0" + file.name;
+function normaliseCamelotFilename(filename) {
+
+    const match = filename.match(
+        /^(\d{1,3})([AB])(\s*-\s*)/
+    );
+
+    if (!match) {
+
+        /*
+         * If the filename doesn't begin with a recognised
+         * Camelot key followed by a dash, leave it unchanged.
+         */
+
+        return filename;
+    }
+
+    const number =
+        match[1].padStart(3, "0");
+
+    const letter =
+        match[2];
+
+    const separator =
+        match[3];
+
+    return (
+        number +
+        letter +
+        separator +
+        filename.slice(match[0].length)
+    );
+}
 
 
-    const extension = lower.endsWith(".mp3")
-        ? ".mp3"
-        : ".wav";
+processedFilename =
+    normaliseCamelotFilename(file.name);
+
+
+const extension = lower.endsWith(".mp3")
+    ? ".mp3"
+    : ".wav";
 
 
     const title =
