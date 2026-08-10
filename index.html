@@ -1,182 +1,322 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Rekordbox Metadata Fixer</title>
 
+
     <style>
+
         * {
             box-sizing: border-box;
         }
 
+
         body {
+
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                         Roboto, Helvetica, Arial, sans-serif;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
+
             background: #f4f5f7;
+
             color: #222;
         }
 
+
         .container {
+
             max-width: 720px;
+
             margin: 60px auto;
+
             padding: 20px;
         }
 
+
         .card {
+
             background: white;
+
             border-radius: 16px;
+
             padding: 40px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+
+            box-shadow:
+                0 8px 30px rgba(0,0,0,0.08);
         }
 
+
         h1 {
+
             margin-top: 0;
+
             text-align: center;
+
             font-size: 30px;
         }
 
+
         .subtitle {
+
             text-align: center;
+
             color: #666;
+
             margin-bottom: 35px;
         }
 
+
         .drop-zone {
+
             display: block;
+
             width: 100%;
+
             border: 2px dashed #aaa;
+
             border-radius: 12px;
+
             padding: 45px 20px;
+
             text-align: center;
+
             background: #fafafa;
+
             cursor: pointer;
+
             transition: 0.2s;
         }
 
+
         .drop-zone:hover,
         .drop-zone.dragover {
+
             border-color: #333;
+
             background: #f0f0f0;
         }
 
+
         .drop-zone strong {
+
             display: block;
+
             font-size: 18px;
+
             margin-bottom: 10px;
         }
 
+
         input[type="file"] {
+
             display: none;
         }
+
 
         .file-info {
+
             margin-top: 25px;
+
             display: none;
         }
 
+
         .info-row {
+
             padding: 12px 0;
+
             border-bottom: 1px solid #eee;
         }
 
+
         .label {
+
             font-size: 12px;
+
             text-transform: uppercase;
+
             color: #777;
+
             margin-bottom: 4px;
         }
 
+
         .value {
+
             word-break: break-word;
+
             font-family: monospace;
         }
 
+
         button {
+
             width: 100%;
+
             border: 0;
+
             border-radius: 8px;
+
             padding: 14px;
+
             font-size: 16px;
+
             cursor: pointer;
+
             margin-top: 20px;
         }
 
+
         button:disabled {
+
             opacity: 0.6;
+
             cursor: not-allowed;
         }
 
+
         .process-button {
+
             background: #222;
+
             color: white;
         }
 
+
         .process-button:hover:not(:disabled) {
+
             background: #444;
         }
 
+
         .save-button {
+
             background: #287a3e;
+
             color: white;
+
             display: none;
         }
 
+
         .save-button:hover {
+
             background: #1f6332;
         }
 
-        .status {
-            margin-top: 25px;
-            padding: 15px;
-            border-radius: 8px;
+
+        .save-note {
+
             display: none;
+
+            text-align: center;
+
+            color: #777;
+
+            font-size: 13px;
+
+            margin-top: 10px;
+
+            line-height: 1.4;
+        }
+
+
+        .status {
+
+            margin-top: 25px;
+
+            padding: 15px;
+
+            border-radius: 8px;
+
+            display: none;
+
             line-height: 1.5;
         }
 
+
         .success {
+
             background: #e8f5eb;
+
             color: #216b34;
         }
 
+
         .error {
+
             background: #fbeaea;
+
             color: #9b2222;
         }
 
+
         .privacy {
+
             text-align: center;
+
             color: #777;
+
             font-size: 13px;
+
             margin-top: 25px;
         }
+
     </style>
+
 </head>
 
+
 <body>
+
 
 <div class="container">
 
     <div class="card">
 
-        <h1>Rekordbox Metadata Fixer</h1>
+
+        <h1>
+            Rekordbox Metadata Fixer
+        </h1>
+
 
         <p class="subtitle">
-            Fix MP3 and WAV titles so they display correctly in Rekordbox.
+
+            Fix MP3 and WAV titles so they
+            display correctly in Rekordbox.
+
         </p>
 
 
         <!-- FILE DROP AREA -->
 
-        <label class="drop-zone" id="dropZone">
+        <label
+            class="drop-zone"
+            id="dropZone"
+        >
 
-            <strong>Drop an MP3 or WAV here</strong>
+            <strong>
+                Drop an MP3 or WAV here
+            </strong>
 
             <span>
                 or click to choose a file
             </span>
+
 
             <input
                 type="file"
@@ -189,7 +329,11 @@
 
         <!-- FILE INFORMATION -->
 
-        <div class="file-info" id="fileInfo">
+        <div
+            class="file-info"
+            id="fileInfo"
+        >
+
 
             <div class="info-row">
 
@@ -197,7 +341,10 @@
                     Original filename
                 </div>
 
-                <div class="value" id="originalName"></div>
+                <div
+                    class="value"
+                    id="originalName"
+                ></div>
 
             </div>
 
@@ -208,7 +355,10 @@
                     Corrected filename
                 </div>
 
-                <div class="value" id="processedName"></div>
+                <div
+                    class="value"
+                    id="processedName"
+                ></div>
 
             </div>
 
@@ -219,7 +369,10 @@
                     Rekordbox title
                 </div>
 
-                <div class="value" id="rekordboxTitle"></div>
+                <div
+                    class="value"
+                    id="rekordboxTitle"
+                ></div>
 
             </div>
 
@@ -228,8 +381,11 @@
                 class="process-button"
                 id="processButton"
             >
+
                 Process File
+
             </button>
+
 
         </div>
 
@@ -242,37 +398,54 @@
         ></div>
 
 
-        <!-- SAVE -->
+        <!-- SAVE BUTTON -->
 
         <button
             class="save-button"
             id="saveButton"
         >
+
             Save Corrected File
+
         </button>
+
+
+        <!-- BROWSER-SPECIFIC SAVE INFORMATION -->
+
+        <p
+            class="save-note"
+            id="saveNote"
+        ></p>
 
 
         <div class="privacy">
 
-            🔒 Your music file is processed entirely in your browser.
+            🔒 Your music file is processed
+            entirely in your browser.
             It is never uploaded to a server.
 
         </div>
+
 
     </div>
 
 </div>
 
 
+
 <script>
+
 
 /* ============================================================
    GLOBAL VARIABLES
    ============================================================ */
 
 let selectedFile = null;
+
 let processedBlob = null;
+
 let processedFilename = null;
+
 
 
 /* ============================================================
@@ -282,29 +455,42 @@ let processedFilename = null;
 const dropZone =
     document.getElementById("dropZone");
 
+
 const fileInput =
     document.getElementById("fileInput");
+
 
 const fileInfo =
     document.getElementById("fileInfo");
 
+
 const originalName =
     document.getElementById("originalName");
+
 
 const processedName =
     document.getElementById("processedName");
 
+
 const rekordboxTitle =
     document.getElementById("rekordboxTitle");
+
 
 const processButton =
     document.getElementById("processButton");
 
+
 const saveButton =
     document.getElementById("saveButton");
 
+
+const saveNote =
+    document.getElementById("saveNote");
+
+
 const status =
     document.getElementById("status");
+
 
 
 /* ============================================================
@@ -316,11 +502,16 @@ fileInput.addEventListener(
     function () {
 
         if (this.files.length > 0) {
-            selectFile(this.files[0]);
+
+            selectFile(
+                this.files[0]
+            );
+
         }
 
     }
 );
+
 
 
 dropZone.addEventListener(
@@ -329,20 +520,26 @@ dropZone.addEventListener(
 
         event.preventDefault();
 
-        dropZone.classList.add("dragover");
+        dropZone.classList.add(
+            "dragover"
+        );
 
     }
 );
+
 
 
 dropZone.addEventListener(
     "dragleave",
     function () {
 
-        dropZone.classList.remove("dragover");
+        dropZone.classList.remove(
+            "dragover"
+        );
 
     }
 );
+
 
 
 dropZone.addEventListener(
@@ -351,9 +548,14 @@ dropZone.addEventListener(
 
         event.preventDefault();
 
-        dropZone.classList.remove("dragover");
+        dropZone.classList.remove(
+            "dragover"
+        );
 
-        if (event.dataTransfer.files.length > 0) {
+
+        if (
+            event.dataTransfer.files.length > 0
+        ) {
 
             selectFile(
                 event.dataTransfer.files[0]
@@ -365,11 +567,13 @@ dropZone.addEventListener(
 );
 
 
+
 /* ============================================================
    SELECT FILE
    ============================================================ */
 
 function selectFile(file) {
+
 
     const lower =
         file.name.toLowerCase();
@@ -393,8 +597,14 @@ function selectFile(file) {
 
     processedBlob = null;
 
+
     saveButton.style.display =
         "none";
+
+
+    saveNote.style.display =
+        "none";
+
 
     status.style.display =
         "none";
@@ -426,11 +636,14 @@ function selectFile(file) {
     originalName.textContent =
         file.name;
 
+
     processedName.textContent =
         processedFilename;
 
+
     rekordboxTitle.textContent =
         title;
+
 
     fileInfo.style.display =
         "block";
@@ -438,14 +651,16 @@ function selectFile(file) {
 }
 
 
+
 /* ============================================================
-   CAMЕLOT FILENAME NORMALISATION
+   CAMELOT FILENAME NORMALISATION
    ============================================================ */
 
 function normaliseCamelotFilename(filename) {
 
+
     /*
-     * Look for:
+     * Recognise:
      *
      * 6A - Track
      * 06A - Track
@@ -455,6 +670,7 @@ function normaliseCamelotFilename(filename) {
      * The dash is deliberately required.
      */
 
+
     const match =
         filename.match(
             /^(\d{1,3})([AB])(\s*-\s*)/
@@ -462,12 +678,6 @@ function normaliseCamelotFilename(filename) {
 
 
     if (!match) {
-
-        /*
-         * If the filename doesn't begin with
-         * a recognised Camelot key followed
-         * by a dash, leave it unchanged.
-         */
 
         return filename;
 
@@ -501,6 +711,7 @@ function normaliseCamelotFilename(filename) {
 }
 
 
+
 /* ============================================================
    PROCESS BUTTON
    ============================================================ */
@@ -509,25 +720,36 @@ processButton.addEventListener(
     "click",
     async function () {
 
+
         if (!selectedFile) {
+
             return;
+
         }
 
 
         processButton.disabled =
             true;
 
+
         processButton.textContent =
             "Processing...";
 
+
         status.style.display =
             "none";
+
 
         saveButton.style.display =
             "none";
 
 
+        saveNote.style.display =
+            "none";
+
+
         try {
+
 
             const lower =
                 selectedFile.name.toLowerCase();
@@ -543,6 +765,7 @@ processButton.addEventListener(
                     );
 
             }
+
 
             else if (
                 lower.endsWith(".wav")
@@ -564,11 +787,74 @@ processButton.addEventListener(
             saveButton.style.display =
                 "block";
 
+
+            /*
+             * Explain saving behaviour for browsers
+             * that do not support the native Save As
+             * dialog.
+             */
+
+
+            if (
+                !("showSaveFilePicker" in window)
+            ) {
+
+
+                const userAgent =
+                    navigator.userAgent.toLowerCase();
+
+
+                if (
+                    userAgent.includes("firefox")
+                ) {
+
+                    saveNote.textContent =
+                        "In Firefox, the corrected file will be saved to your Downloads folder by default.";
+
+
+                    saveNote.style.display =
+                        "block";
+
+                }
+
+
+                else if (
+                    userAgent.includes("safari") &&
+                    !userAgent.includes("chrome")
+                ) {
+
+                    saveNote.textContent =
+                        "Your browser will save the corrected file using its normal download settings.";
+
+
+                    saveNote.style.display =
+                        "block";
+
+                }
+
+
+                else {
+
+                    saveNote.textContent =
+                        "Your browser will save the corrected file using its normal download settings.";
+
+
+                    saveNote.style.display =
+                        "block";
+
+                }
+
+            }
+
+
         }
+
 
         catch (error) {
 
+
             console.error(error);
+
 
             showError(
                 "The file could not be processed: " +
@@ -581,6 +867,7 @@ processButton.addEventListener(
         processButton.disabled =
             false;
 
+
         processButton.textContent =
             "Process File";
 
@@ -588,11 +875,13 @@ processButton.addEventListener(
 );
 
 
+
 /* ============================================================
    MP3 PROCESSING
    ============================================================ */
 
 async function processMP3(file) {
+
 
     const buffer =
         await file.arrayBuffer();
@@ -615,6 +904,7 @@ async function processMP3(file) {
         bytes[1] === 0x44 &&
         bytes[2] === 0x33
     ) {
+
 
         const size =
             synchsafeToInt(
@@ -649,13 +939,7 @@ async function processMP3(file) {
 
 
     /*
-     * TIT2 frame:
-     *
-     * 4 bytes = TIT2
-     * 4 bytes = frame size
-     * 2 bytes = flags
-     * 1 byte  = encoding
-     * text
+     * TIT2 frame.
      */
 
     const frameData =
@@ -697,10 +981,6 @@ async function processMP3(file) {
         frameData.length
     );
 
-
-    /*
-     * Flags are zero.
-     */
 
     frame.set(
         frameData,
@@ -779,11 +1059,13 @@ async function processMP3(file) {
 }
 
 
+
 /* ============================================================
    WAV PROCESSING
    ============================================================ */
 
 async function processWAV(file) {
+
 
     const buffer =
         await file.arrayBuffer();
@@ -859,6 +1141,7 @@ async function processWAV(file) {
     while (
         pos + 8 <= bytes.length
     ) {
+
 
         const id =
             String.fromCharCode(
@@ -981,8 +1264,7 @@ async function processWAV(file) {
 
 
     /*
-     * INAM data includes a
-     * null terminator.
+     * INAM data includes a null terminator.
      */
 
     const inamData =
@@ -1199,6 +1481,7 @@ async function processWAV(file) {
 }
 
 
+
 /* ============================================================
    HELPER FUNCTIONS
    ============================================================ */
@@ -1216,6 +1499,7 @@ function readUint32(
     ) >>> 0;
 
 }
+
 
 
 function writeUint32(
@@ -1242,6 +1526,7 @@ function writeUint32(
 }
 
 
+
 function writeString(
     bytes,
     offset,
@@ -1260,6 +1545,7 @@ function writeString(
     }
 
 }
+
 
 
 function writeSynchsafe(
@@ -1286,6 +1572,7 @@ function writeSynchsafe(
 }
 
 
+
 function synchsafeToInt(
     bytes,
     offset
@@ -1299,6 +1586,7 @@ function synchsafeToInt(
     );
 
 }
+
 
 
 /* ============================================================
@@ -1323,6 +1611,7 @@ function showSuccess(
 }
 
 
+
 function showError(
     message
 ) {
@@ -1341,6 +1630,7 @@ function showError(
 }
 
 
+
 /* ============================================================
    SAVE CORRECTED FILE
    ============================================================ */
@@ -1349,8 +1639,11 @@ saveButton.addEventListener(
     "click",
     async function () {
 
+
         if (!processedBlob) {
+
             return;
+
         }
 
 
@@ -1366,7 +1659,9 @@ saveButton.addEventListener(
             "showSaveFilePicker" in window
         ) {
 
+
             try {
+
 
                 const isMP3 =
                     processedFilename
@@ -1392,21 +1687,29 @@ saveButton.addEventListener(
                         suggestedName:
                             processedFilename,
 
+
                         types: [
+
                             {
+
                                 description:
                                     isMP3
                                         ? "MP3 audio"
                                         : "WAV audio",
 
+
                                 accept: {
+
                                     [mimeType]:
                                         [
                                             "." +
                                             extension
                                         ]
+
                                 }
+
                             }
+
                         ]
 
                     });
@@ -1433,11 +1736,13 @@ saveButton.addEventListener(
 
             }
 
+
             catch (error) {
 
+
                 /*
-                 * The user cancelled
-                 * the Save dialog.
+                 * User cancelled the
+                 * Save dialog.
                  */
 
                 if (
@@ -1450,7 +1755,9 @@ saveButton.addEventListener(
                 }
 
 
-                console.error(error);
+                console.error(
+                    error
+                );
 
             }
 
@@ -1458,10 +1765,8 @@ saveButton.addEventListener(
 
 
         /*
-         * Firefox/Safari fallback.
-         *
-         * These browsers don't currently
-         * provide the same save-location API.
+         * Firefox, Safari and other browsers
+         * use their normal download mechanism.
          */
 
         const url =
@@ -1509,7 +1814,9 @@ saveButton.addEventListener(
     }
 );
 
+
 </script>
 
 </body>
+
 </html>
