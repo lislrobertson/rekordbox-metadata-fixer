@@ -1,13 +1,1182 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Rekordbox Metadata Fixer</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f5f7;
+            color: #222;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 60px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 30px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 35px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #aaa;
+            border-radius: 12px;
+            padding: 45px 20px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: #333;
+            background: #f0f0f0;
+        }
+
+        .drop-zone strong {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-info {
+            margin-top: 25px;
+            display: none;
+        }
+
+        .info-row {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #777;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            word-break: break-word;
+            font-family: monospace;
+        }
+
+        button {
+            width: 100%;
+            border: 0;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .process-button {
+            background: #222;
+            color: white;
+        }
+
+        .process-button:hover {
+            background: #444;
+        }
+
+        .download-button {
+            background: #287a3e;
+            color: white;
+            display: none;
+        }
+
+        .download-button:hover {
+            background: #1f6332;
+        }
+
+        .status {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .success {
+            background: #e8f5eb;
+            color: #216b34;
+        }
+
+        .error {
+            background: #fbeaea;
+            color: #9b2222;
+        }
+
+        .privacy {
+            text-align: center;
+            color: #777;
+            font-size: 13px;
+            margin-top: 25px;
+        }
+    </style>
 </head>
+
 <body>
 
-<h1>Rekordbox Metadata Fixer</h1>
+<div class="container">
 
-<p>The website is working!</p>
+    <div class="card">
+
+        <h1>Rekordbox Metadata Fixer</h1>
+
+        <p class="subtitle">
+            Fix MP3 and WAV titles so they display correctly in Rekordbox.
+        </p>
+
+
+        <!-- FILE DROP AREA -->
+
+        <label class="drop-zone" id="dropZone">
+
+            <strong>Drop an MP3 or WAV here</strong>
+
+            <span>
+                or click to choose a file
+            </span>
+
+            <input
+                type="file"
+                id="fileInput"
+                accept=".mp3,.wav,audio/mpeg,audio/wav"
+            >
+
+        </label>
+
+
+        <!-- FILE INFORMATION -->
+
+        <div class="file-info" id="fileInfo">
+
+            <div class="info-row">
+
+                <div class="label">
+                    Original filename
+                </div>
+
+                <div class="value" id="originalName"></div>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <div class="label">
+                    Processed filename
+                </div>
+
+                <div class="value" id="processedName"></div>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <div class="label">
+                    Rekordbox title
+                </div>
+
+                <div class="value" id="rekordboxTitle"></div>
+
+            </div>
+
+
+            <button
+                class="process-button"
+                id="processButton"
+            >
+                Process File
+            </button>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div
+            class="status"
+            id="status"
+        ></div>
+
+
+        <!-- DOWNLOAD -->
+
+        <button
+            class="download-button"
+            id="downloadButton"
+        >
+            Download Corrected File
+        </button>
+
+
+        <div class="privacy">
+
+            🔒 Your music file is processed entirely in your browser.
+            It is never uploaded to a server.
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   GLOBAL VARIABLES
+   ============================================================ */
+
+let selectedFile = null;
+let processedBlob = null;
+let processedFilename = null;
+
+
+/* ============================================================
+   DOM ELEMENTS
+   ============================================================ */
+
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+
+const fileInfo = document.getElementById("fileInfo");
+
+const originalName = document.getElementById("originalName");
+const processedName = document.getElementById("processedName");
+const rekordboxTitle = document.getElementById("rekordboxTitle");
+
+const processButton = document.getElementById("processButton");
+const downloadButton = document.getElementById("downloadButton");
+
+const status = document.getElementById("status");
+
+
+/* ============================================================
+   FILE SELECTION
+   ============================================================ */
+
+fileInput.addEventListener("change", function () {
+
+    if (this.files.length > 0) {
+        selectFile(this.files[0]);
+    }
+
+});
+
+
+dropZone.addEventListener("dragover", function (event) {
+
+    event.preventDefault();
+
+    dropZone.classList.add("dragover");
+
+});
+
+
+dropZone.addEventListener("dragleave", function () {
+
+    dropZone.classList.remove("dragover");
+
+});
+
+
+dropZone.addEventListener("drop", function (event) {
+
+    event.preventDefault();
+
+    dropZone.classList.remove("dragover");
+
+    if (event.dataTransfer.files.length > 0) {
+        selectFile(event.dataTransfer.files[0]);
+    }
+
+});
+
+
+function selectFile(file) {
+
+    const lower = file.name.toLowerCase();
+
+    if (
+        !lower.endsWith(".mp3") &&
+        !lower.endsWith(".wav")
+    ) {
+
+        showError(
+            "Please choose an MP3 or WAV file."
+        );
+
+        return;
+    }
+
+
+    selectedFile = file;
+
+    processedBlob = null;
+
+    downloadButton.style.display = "none";
+
+    status.style.display = "none";
+
+
+    /* Add one zero to filename */
+
+    processedFilename = "0" + file.name;
+
+
+    const extension = lower.endsWith(".mp3")
+        ? ".mp3"
+        : ".wav";
+
+
+    const title =
+        processedFilename.slice(
+            0,
+            -extension.length
+        );
+
+
+    originalName.textContent = file.name;
+
+    processedName.textContent = processedFilename;
+
+    rekordboxTitle.textContent = title;
+
+    fileInfo.style.display = "block";
+
+}
+
+
+/* ============================================================
+   PROCESS BUTTON
+   ============================================================ */
+
+processButton.addEventListener("click", async function () {
+
+    if (!selectedFile) {
+        return;
+    }
+
+
+    processButton.disabled = true;
+
+    processButton.textContent = "Processing...";
+
+    status.style.display = "none";
+
+    downloadButton.style.display = "none";
+
+
+    try {
+
+        const lower =
+            selectedFile.name.toLowerCase();
+
+
+        if (lower.endsWith(".mp3")) {
+
+            processedBlob =
+                await processMP3(selectedFile);
+
+        }
+
+        else if (lower.endsWith(".wav")) {
+
+            processedBlob =
+                await processWAV(selectedFile);
+
+        }
+
+
+        showSuccess(
+            "The file has been processed successfully."
+        );
+
+
+        downloadButton.style.display = "block";
+
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        showError(
+            "The file could not be processed: " +
+            error.message
+        );
+
+    }
+
+
+    processButton.disabled = false;
+
+    processButton.textContent = "Process File";
+
+});
+
+
+/* ============================================================
+   MP3 PROCESSING
+   ============================================================ */
+
+async function processMP3(file) {
+
+    const buffer =
+        await file.arrayBuffer();
+
+    const bytes =
+        new Uint8Array(buffer);
+
+
+    /*
+     * Locate existing ID3 tag.
+     */
+
+    let tagSize = 0;
+
+    if (
+        bytes.length >= 10 &&
+        bytes[0] === 0x49 &&
+        bytes[1] === 0x44 &&
+        bytes[2] === 0x33
+    ) {
+
+        const size =
+            synchsafeToInt(
+                bytes,
+                6
+            );
+
+        tagSize = 10 + size;
+
+    }
+
+
+    /*
+     * Build a new ID3v2.3 TIT2 frame.
+     */
+
+    const title =
+        processedFilename.slice(
+            0,
+            -4
+        );
+
+
+    const encoder =
+        new TextEncoder();
+
+
+    const titleBytes =
+        encoder.encode(title);
+
+
+    /*
+     * TIT2 frame:
+     *
+     * 4 bytes = TIT2
+     * 4 bytes = frame size
+     * 2 bytes = flags
+     * 1 byte  = encoding
+     * text
+     */
+
+    const frameData =
+        new Uint8Array(
+            1 + titleBytes.length
+        );
+
+
+    /*
+     * Encoding 3 = UTF-8
+     */
+
+    frameData[0] = 3;
+
+    frameData.set(
+        titleBytes,
+        1
+    );
+
+
+    const frame =
+        new Uint8Array(
+            10 + frameData.length
+        );
+
+
+    frame.set(
+        encoder.encode("TIT2"),
+        0
+    );
+
+
+    writeUint32(
+        frame,
+        4,
+        frameData.length
+    );
+
+
+    frame.set(
+        frameData,
+        10
+    );
+
+
+    /*
+     * Create ID3 header.
+     */
+
+    const tag =
+        new Uint8Array(
+            10 + frame.length
+        );
+
+
+    tag[0] = 0x49; // I
+    tag[1] = 0x44; // D
+    tag[2] = 0x33; // 3
+
+    tag[3] = 3;    // ID3v2.3
+    tag[4] = 0;
+    tag[5] = 0;
+
+
+    writeSynchsafe(
+        tag,
+        6,
+        frame.length
+    );
+
+
+    tag.set(
+        frame,
+        10
+    );
+
+
+    /*
+     * Preserve the audio data after the
+     * existing ID3 tag.
+     */
+
+    const audio =
+        bytes.slice(tagSize);
+
+
+    return new Blob(
+        [tag, audio],
+        {
+            type: "audio/mpeg"
+        }
+    );
+
+}
+
+
+/* ============================================================
+   WAV PROCESSING
+   ============================================================ */
+
+async function processWAV(file) {
+
+    const buffer =
+        await file.arrayBuffer();
+
+    const bytes =
+        new Uint8Array(buffer);
+
+
+    if (bytes.length < 12) {
+        throw new Error(
+            "File is too small to be a WAV."
+        );
+    }
+
+
+    /*
+     * Check RIFF/WAVE.
+     */
+
+    if (
+        bytes[0] !== 0x52 ||
+        bytes[1] !== 0x49 ||
+        bytes[2] !== 0x46 ||
+        bytes[3] !== 0x46
+    ) {
+
+        throw new Error(
+            "No RIFF header found."
+        );
+
+    }
+
+
+    if (
+        bytes[8] !== 0x57 ||
+        bytes[9] !== 0x41 ||
+        bytes[10] !== 0x56 ||
+        bytes[11] !== 0x45
+    ) {
+
+        throw new Error(
+            "No WAVE identifier found."
+        );
+
+    }
+
+
+    let pos = 12;
+
+    let fmtChunk = null;
+
+    let audioData = null;
+
+
+    /*
+     * Find fmt and data chunks.
+     */
+
+    while (
+        pos + 8 <= bytes.length
+    ) {
+
+        const id =
+            String.fromCharCode(
+                bytes[pos],
+                bytes[pos + 1],
+                bytes[pos + 2],
+                bytes[pos + 3]
+            );
+
+
+        const size =
+            readUint32(
+                bytes,
+                pos + 4
+            );
+
+
+        const chunkStart =
+            pos;
+
+        const chunkEnd =
+            pos + 8 + size;
+
+
+        if (
+            chunkEnd > bytes.length
+        ) {
+
+            throw new Error(
+                "Invalid WAV chunk size."
+            );
+
+        }
+
+
+        if (
+            id === "fmt " &&
+            fmtChunk === null
+        ) {
+
+            fmtChunk =
+                bytes.slice(
+                    chunkStart,
+                    chunkEnd
+                );
+
+        }
+
+
+        if (
+            id === "data" &&
+            audioData === null
+        ) {
+
+            audioData =
+                bytes.slice(
+                    pos + 8,
+                    pos + 8 + size
+                );
+
+        }
+
+
+        pos = chunkEnd;
+
+
+        /*
+         * RIFF chunks are word aligned.
+         */
+
+        if (size % 2) {
+            pos++;
+        }
+
+    }
+
+
+    if (!fmtChunk) {
+
+        throw new Error(
+            "No fmt chunk found."
+        );
+
+    }
+
+
+    if (!audioData) {
+
+        throw new Error(
+            "No audio data chunk found."
+        );
+
+    }
+
+
+    /*
+     * Create INAM.
+     */
+
+    const title =
+        processedFilename.slice(
+            0,
+            -4
+        );
+
+
+    const titleBytes =
+        new TextEncoder().encode(
+            title
+        );
+
+
+    /*
+     * INAM data = title + null terminator.
+     */
+
+    let inamData =
+        new Uint8Array(
+            titleBytes.length + 1
+        );
+
+
+    inamData.set(
+        titleBytes,
+        0
+    );
+
+
+    inamData[
+        titleBytes.length
+    ] = 0;
+
+
+    /*
+     * INAM chunk.
+     */
+
+    let inamSize =
+        inamData.length;
+
+
+    /*
+     * RIFF requires even chunk sizes.
+     */
+
+    const inamPadding =
+        inamSize % 2;
+
+
+    const inam =
+        new Uint8Array(
+            8 +
+            inamSize +
+            inamPadding
+        );
+
+
+    writeString(
+        inam,
+        0,
+        "INAM"
+    );
+
+
+    writeUint32(
+        inam,
+        4,
+        inamSize
+    );
+
+
+    inam.set(
+        inamData,
+        8
+    );
+
+
+    /*
+     * LIST/INFO chunk.
+     */
+
+    const listSize =
+        4 + inam.length;
+
+
+    const list =
+        new Uint8Array(
+            8 + listSize
+        );
+
+
+    writeString(
+        list,
+        0,
+        "LIST"
+    );
+
+
+    writeUint32(
+        list,
+        4,
+        listSize
+    );
+
+
+    writeString(
+        list,
+        8,
+        "INFO"
+    );
+
+
+    list.set(
+        inam,
+        12
+    );
+
+
+    /*
+     * Audio data chunk.
+     */
+
+    const audioChunk =
+        new Uint8Array(
+            8 + audioData.length
+        );
+
+
+    writeString(
+        audioChunk,
+        0,
+        "data"
+    );
+
+
+    writeUint32(
+        audioChunk,
+        4,
+        audioData.length
+    );
+
+
+    audioChunk.set(
+        audioData,
+        8
+    );
+
+
+    /*
+     * Construct complete RIFF.
+     */
+
+    const riffSize =
+        4 +
+        fmtChunk.length +
+        list.length +
+        audioChunk.length;
+
+
+    const output =
+        new Uint8Array(
+            8 + riffSize
+        );
+
+
+    writeString(
+        output,
+        0,
+        "RIFF"
+    );
+
+
+    writeUint32(
+        output,
+        4,
+        riffSize
+    );
+
+
+    writeString(
+        output,
+        8,
+        "WAVE"
+    );
+
+
+    let offset = 12;
+
+
+    output.set(
+        fmtChunk,
+        offset
+    );
+
+    offset += fmtChunk.length;
+
+
+    output.set(
+        list,
+        offset
+    );
+
+    offset += list.length;
+
+
+    output.set(
+        audioChunk,
+        offset
+    );
+
+
+    return new Blob(
+        [output],
+        {
+            type: "audio/wav"
+        }
+    );
+
+}
+
+
+/* ============================================================
+   HELPER FUNCTIONS
+   ============================================================ */
+
+function readUint32(
+    bytes,
+    offset
+) {
+
+    return (
+        bytes[offset] |
+        (bytes[offset + 1] << 8) |
+        (bytes[offset + 2] << 16) |
+        (bytes[offset + 3] << 24)
+    ) >>> 0;
+
+}
+
+
+function writeUint32(
+    bytes,
+    offset,
+    value
+) {
+
+    bytes[offset] =
+        value & 0xff;
+
+    bytes[offset + 1] =
+        (value >>> 8) & 0xff;
+
+    bytes[offset + 2] =
+        (value >>> 16) & 0xff;
+
+    bytes[offset + 3] =
+        (value >>> 24) & 0xff;
+
+}
+
+
+function writeString(
+    bytes,
+    offset,
+    string
+) {
+
+    for (
+        let i = 0;
+        i < string.length;
+        i++
+    ) {
+
+        bytes[offset + i] =
+            string.charCodeAt(i);
+
+    }
+
+}
+
+
+function writeSynchsafe(
+    bytes,
+    offset,
+    value
+) {
+
+    bytes[offset] =
+        (value >> 21) & 0x7f;
+
+    bytes[offset + 1] =
+        (value >> 14) & 0x7f;
+
+    bytes[offset + 2] =
+        (value >> 7) & 0x7f;
+
+    bytes[offset + 3] =
+        value & 0x7f;
+
+}
+
+
+function synchsafeToInt(
+    bytes,
+    offset
+) {
+
+    return (
+        (bytes[offset] & 0x7f) << 21 |
+        (bytes[offset + 1] & 0x7f) << 14 |
+        (bytes[offset + 2] & 0x7f) << 7 |
+        (bytes[offset + 3] & 0x7f)
+    );
+
+}
+
+
+/* ============================================================
+   STATUS MESSAGES
+   ============================================================ */
+
+function showSuccess(message) {
+
+    status.textContent = message;
+
+    status.className =
+        "status success";
+
+    status.style.display =
+        "block";
+
+}
+
+
+function showError(message) {
+
+    status.textContent = message;
+
+    status.className =
+        "status error";
+
+    status.style.display =
+        "block";
+
+}
+
+
+/* ============================================================
+   DOWNLOAD
+   ============================================================ */
+
+downloadButton.addEventListener(
+    "click",
+    function () {
+
+        if (!processedBlob) {
+            return;
+        }
+
+
+        const url =
+            URL.createObjectURL(
+                processedBlob
+            );
+
+
+        const link =
+            document.createElement("a");
+
+
+        link.href = url;
+
+        link.download =
+            processedFilename;
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        document.body.removeChild(
+            link
+        );
+
+
+        URL.revokeObjectURL(
+            url
+        );
+
+    }
+);
+
+</script>
 
 </body>
 </html>
