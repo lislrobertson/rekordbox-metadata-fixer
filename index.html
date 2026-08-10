@@ -296,8 +296,8 @@
 
         <p class="subtitle">
 
-            Fix MP3 and WAV titles so they
-            display correctly in Rekordbox.
+            Fix MP3 and WAV titles so
+            they display correctly in Rekordbox.
 
         </p>
 
@@ -784,65 +784,50 @@ processButton.addEventListener(
             );
 
 
+            /*
+             * Show the Save button.
+             */
+
             saveButton.style.display =
                 "block";
 
 
             /*
-             * Explain saving behaviour for browsers
-             * that do not support the native Save As
-             * dialog.
+             * Detect the browser directly.
+             *
+             * Firefox does not provide a native
+             * Save As dialog through the API used
+             * by Chrome/Edge, so it uses the
+             * normal Downloads behaviour.
              */
+
+            const userAgent =
+                navigator.userAgent.toLowerCase();
 
 
             if (
-                !("showSaveFilePicker" in window)
+                userAgent.includes("firefox")
             ) {
 
+                saveNote.textContent =
+                    "In Firefox, the corrected file will be saved to your Downloads folder by default.";
 
-                const userAgent =
-                    navigator.userAgent.toLowerCase();
+                saveNote.style.display =
+                    "block";
 
-
-                if (
-                    userAgent.includes("firefox")
-                ) {
-
-                    saveNote.textContent =
-                        "In Firefox, the corrected file will be saved to your Downloads folder by default.";
+            }
 
 
-                    saveNote.style.display =
-                        "block";
+            else if (
+                userAgent.includes("safari") &&
+                !userAgent.includes("chrome")
+            ) {
 
-                }
+                saveNote.textContent =
+                    "Your browser will save the corrected file using its normal download settings.";
 
-
-                else if (
-                    userAgent.includes("safari") &&
-                    !userAgent.includes("chrome")
-                ) {
-
-                    saveNote.textContent =
-                        "Your browser will save the corrected file using its normal download settings.";
-
-
-                    saveNote.style.display =
-                        "block";
-
-                }
-
-
-                else {
-
-                    saveNote.textContent =
-                        "Your browser will save the corrected file using its normal download settings.";
-
-
-                    saveNote.style.display =
-                        "block";
-
-                }
+                saveNote.style.display =
+                    "block";
 
             }
 
@@ -853,7 +838,9 @@ processButton.addEventListener(
         catch (error) {
 
 
-            console.error(error);
+            console.error(
+                error
+            );
 
 
             showError(
@@ -1651,7 +1638,7 @@ saveButton.addEventListener(
          * Chrome and Edge support the
          * File System Access API.
          *
-         * This provides a genuine
+         * This gives the user a native
          * Save As dialog.
          */
 
@@ -1741,8 +1728,7 @@ saveButton.addEventListener(
 
 
                 /*
-                 * User cancelled the
-                 * Save dialog.
+                 * User cancelled Save As.
                  */
 
                 if (
