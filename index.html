@@ -39,17 +39,80 @@
 
             color: #222;
         }
-            
-        .copyright {
 
+
+        .password-screen {
+            position: fixed;
+            inset: 0;
+            background: #f4f5f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 9999;
+        }
+
+        .password-card {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
             text-align: center;
+        }
 
-            color: #999;
+        .password-card h1 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
 
-            font-size: 12px;
+        .password-card p {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
 
-            margin-top: 20px;
+        .password-input {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+        }
 
+        .password-input:focus {
+            border-color: #666;
+        }
+
+        .password-button {
+            width: 100%;
+            border: 0;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            background: #222;
+            color: white;
+        }
+
+        .password-button:hover {
+            background: #444;
+        }
+
+        .password-error {
+            display: none;
+            color: #9b2222;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .site-content {
+            display: none;
         }
 
         .container {
@@ -579,7 +642,41 @@
 </head>
 
 
+
 <body>
+
+<div class="password-screen" id="passwordScreen">
+    <div class="password-card">
+        <h1>Rekordbox Metadata Fixer</h1>
+        <p>Please enter the password to access the tool.</p>
+
+        <input
+            type="password"
+            id="passwordInput"
+            class="password-input"
+            placeholder="Password"
+            autocomplete="off"
+        >
+
+        <button
+            type="button"
+            id="passwordButton"
+            class="password-button"
+        >
+            Enter
+        </button>
+
+        <div
+            id="passwordError"
+            class="password-error"
+        >
+            Incorrect password. Please try again.
+        </div>
+    </div>
+</div>
+
+<div class="site-content" id="siteContent">
+
 
 
 <div class="container">
@@ -874,21 +971,66 @@
             They are never uploaded to a server.
 
         </div>
-
-        <div class="copyright">
-
-            © 2026 Lisl Robertson. All rights reserved.
-
-        </div>
-
-
-    </div>
+</div>
 
 </div>
 
 
+</div>
 
 <script>
+
+/* ============================================================
+   PASSWORD GATE
+   ============================================================ */
+
+const correctPassword = "Alessandro";
+
+const passwordScreen =
+    document.getElementById("passwordScreen");
+
+const siteContent =
+    document.getElementById("siteContent");
+
+const passwordInput =
+    document.getElementById("passwordInput");
+
+const passwordButton =
+    document.getElementById("passwordButton");
+
+const passwordError =
+    document.getElementById("passwordError");
+
+function unlockPage() {
+    if (passwordInput.value === correctPassword) {
+        passwordScreen.style.display = "none";
+        siteContent.style.display = "block";
+        passwordInput.value = "";
+        passwordError.style.display = "none";
+    }
+    else {
+        passwordError.style.display = "block";
+        passwordInput.focus();
+        passwordInput.select();
+    }
+}
+
+passwordButton.addEventListener(
+    "click",
+    unlockPage
+);
+
+passwordInput.addEventListener(
+    "keydown",
+    function (event) {
+        if (event.key === "Enter") {
+            unlockPage();
+        }
+    }
+);
+
+passwordInput.focus();
+
 
 
 /* ============================================================
